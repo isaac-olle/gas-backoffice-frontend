@@ -21,6 +21,7 @@ export function DashboardPage() {
     reload: resourceReload,
   } = useProtectedResources();
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [clientTab, setClientTab] = useState<'information' | 'scopes'>('information');
   const [selectedResource, setSelectedResource] = useState<ProtectedResource | null>(null);
   const { names: scopeNames, resolve: resolveScopeNames } = useScopeNames();
   const { names: authorNames, resolve: resolveAuthorNames } = useAuthorNames();
@@ -154,7 +155,7 @@ export function DashboardPage() {
             <button
               key={client.id}
               type="button"
-              onClick={() => setSelectedClient(client)}
+              onClick={() => { setClientTab('information'); setSelectedClient(client); }}
               className="w-full text-left bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-lg p-4 flex items-start justify-between gap-4 transition"
             >
               <div className="min-w-0">
@@ -195,6 +196,20 @@ export function DashboardPage() {
 
       {selectedClient && (
         <Modal title={selectedClient.name} onClose={() => setSelectedClient(null)}>
+          <nav aria-label="Client details" className="mb-5 flex gap-4 border-b border-slate-800">
+            {(['information', 'scopes'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                aria-pressed={clientTab === tab}
+                onClick={() => setClientTab(tab)}
+                className={`border-b-2 px-1 pb-3 text-sm font-medium ${clientTab === tab ? 'border-red-500 text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+              >
+                {tab === 'information' ? 'Information' : 'Allowed scopes'}
+              </button>
+            ))}
+          </nav>
+          {clientTab === 'information' ? <>
           <DetailRow label="ID">{selectedClient.id}</DetailRow>
           <DetailRow label="Status">{selectedClient.status}</DetailRow>
           <DetailRow label="Subscription">
@@ -211,12 +226,36 @@ export function DashboardPage() {
           <DetailRow label="Redirect URIs">
             {selectedClient.redirectUris.join(', ') || '—'}
           </DetailRow>
-          <DetailRow label="Allowed scopes">
-            {selectedClient.allowedScopes
-              .map((scopeId) => scopeNames[scopeId] ?? scopeId)
-              .join(', ') || '—'}
-          </DetailRow>
           <DetailRow label="Secret IDs">{selectedClient.secretIds.join(', ') || '—'}</DetailRow>
+          </> : <div className="space-y-4">
+            {selectedClient.allowedScopes.length === 0 ? (
+              <p className="text-sm text-slate-500">No allowed scopes.</p>
+            ) : <>
+              {resourcesLoading && <p className="text-sm text-slate-400">Loading protected resources…</p>}
+              {resourcesError && <p role="alert" className="text-sm text-red-400">{resourcesError}</p>}
+              {[
+                ...protectedResources.map((resource) => ({
+                  id: resource.id,
+                  name: resource.name,
+                  scopes: resource.scopes.filter((scopeId) => selectedClient.allowedScopes.includes(scopeId)),
+                })),
+                ...(!resourcesLoading ? [{
+                  id: 'unresolved-scopes',
+                  name: 'Other scopes',
+                  scopes: selectedClient.allowedScopes.filter((scopeId) => !protectedResources.some((resource) => resource.scopes.includes(scopeId))),
+                }] : []),
+              ].filter((group) => group.scopes.length > 0).map((group) => (
+                <section key={group.id} className="rounded-lg border border-slate-800 p-4">
+                  <h4 className="mb-3 text-sm font-semibold text-slate-200">{group.name}</h4>
+                  <ul className="flex flex-wrap gap-2">
+                    {group.scopes.map((scopeId) => (
+                      <li key={scopeId} className="break-all rounded-md bg-slate-800 px-2.5 py-1 text-xs text-slate-300">{scopeNames[scopeId] ?? scopeId}</li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </>}
+          </div>}
         </Modal>
       )}
 
