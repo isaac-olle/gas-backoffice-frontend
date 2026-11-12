@@ -13,6 +13,8 @@ import { UsersProvider } from './modules/users/UsersContext';
 import { ManagedUserRepository } from './modules/users/infrastructure/repositories/ManagedUserRepository';
 import { ErrorsProvider } from './modules/errors/ErrorsContext';
 import { GasErrorRepository } from './modules/errors/infrastructure/repositories/GasErrorRepository';
+import { EventsProvider } from './modules/events/EventsContext';
+import { GasEventRepository } from './modules/events/infrastructure/repositories/GasEventRepository';
 import { ScopesProvider } from './modules/scopes/ScopesContext';
 import { ScopeRepository } from './modules/scopes/infrastructure/repositories/ScopeRepository';
 import { SubscriptionsProvider } from './modules/subscriptions/SubscriptionsContext';
@@ -24,6 +26,7 @@ const clientRepository = new ClientRepository();
 const protectedResourceRepository = new ProtectedResourceRepository();
 const managedUserRepository = new ManagedUserRepository();
 const gasErrorRepository = new GasErrorRepository();
+const gasEventRepository = new GasEventRepository();
 const scopeRepository = new ScopeRepository();
 const subscriptionRepository = new SubscriptionRepository();
 
@@ -36,7 +39,9 @@ createRoot(document.getElementById('root')!).render(
               <ErrorsProvider gasErrorRepository={gasErrorRepository}>
                 <ScopesProvider scopeRepository={scopeRepository}>
                   <SubscriptionsProvider subscriptionRepository={subscriptionRepository}>
-                    <App />
+                    <EventsProvider gasEventRepository={gasEventRepository}>
+                      <App />
+                    </EventsProvider>
                   </SubscriptionsProvider>
                 </ScopesProvider>
               </ErrorsProvider>

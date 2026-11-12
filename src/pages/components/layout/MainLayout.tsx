@@ -6,6 +6,7 @@ import { Topbar } from './Topbar';
 import { DashboardPage } from '../../DashboardPage';
 import { UsersPage } from '../../UsersPage';
 import { ErrorsPage } from '../../ErrorsPage';
+import { EventsPage } from '../../EventsPage';
 import { SubscriptionsPage } from '../../SubscriptionsPage';
 
 const SECTION_TITLES: Record<SectionId, string> = {
@@ -13,6 +14,7 @@ const SECTION_TITLES: Record<SectionId, string> = {
   subscriptions: 'Subscriptions',
   users: 'Users',
   errors: 'Errors',
+  events: 'Events',
 };
 
 export function MainLayout() {
@@ -44,6 +46,7 @@ export function MainLayout() {
           {activeSection === 'subscriptions' && <SubscriptionsPage />}
           {activeSection === 'users' && <UsersPage />}
           {activeSection === 'errors' && <ErrorsPage />}
+          {activeSection === 'events' && <EventsPage />}
         </main>
       </div>
     </div>

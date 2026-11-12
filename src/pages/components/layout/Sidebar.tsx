@@ -1,8 +1,8 @@
-import { LayoutDashboard, Users as UsersIcon, AlertTriangle, CreditCard, LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Users as UsersIcon, AlertTriangle, Activity, CreditCard, LucideIcon } from 'lucide-react';
 import { GasStationIcon } from '../icons/GasStationIcon';
 import { isAdminRole, UserRole } from '../../../modules/auth/domain/User';
 
-export type SectionId = 'dashboard' | 'subscriptions' | 'users' | 'errors';
+export type SectionId = 'dashboard' | 'subscriptions' | 'users' | 'errors' | 'events';
 
 interface NavItem {
   id: SectionId;
@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, adminOnly: true },
   { id: 'users', label: 'Users', icon: UsersIcon, adminOnly: true },
   { id: 'errors', label: 'Errors', icon: AlertTriangle, adminOnly: true },
+  { id: 'events', label: 'Events', icon: Activity, adminOnly: true },
 ];
 
 interface SidebarProps {
