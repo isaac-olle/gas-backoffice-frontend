@@ -195,7 +195,7 @@ export function DashboardPage() {
       </Panel>
 
       {selectedClient && (
-        <Modal title={selectedClient.name} onClose={() => setSelectedClient(null)}>
+        <Modal title={selectedClient.name} onClose={() => setSelectedClient(null)} size="wide">
           <nav aria-label="Client details" className="mb-5 flex gap-4 border-b border-slate-800">
             {(['information', 'scopes'] as const).map((tab) => (
               <button
@@ -209,7 +209,7 @@ export function DashboardPage() {
               </button>
             ))}
           </nav>
-          {clientTab === 'information' ? <>
+          {clientTab === 'information' ? <div className="grid gap-x-6 sm:grid-cols-2">
           <DetailRow label="ID">{selectedClient.id}</DetailRow>
           <DetailRow label="Status">{selectedClient.status}</DetailRow>
           <DetailRow label="Subscription">
@@ -227,7 +227,7 @@ export function DashboardPage() {
             {selectedClient.redirectUris.join(', ') || '—'}
           </DetailRow>
           <DetailRow label="Secret IDs">{selectedClient.secretIds.join(', ') || '—'}</DetailRow>
-          </> : <div className="space-y-4">
+          </div> : <div className="space-y-4">
             {selectedClient.allowedScopes.length === 0 ? (
               <p className="text-sm text-slate-500">No allowed scopes.</p>
             ) : <>

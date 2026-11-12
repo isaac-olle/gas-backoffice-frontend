@@ -8,6 +8,7 @@ interface ModalProps {
   className?: string;
   headerClassName?: string;
   contentClassName?: string;
+  size?: 'default' | 'wide';
 }
 
 export function Modal({
@@ -17,6 +18,7 @@ export function Modal({
   className = '',
   headerClassName = '',
   contentClassName = '',
+  size = 'default',
 }: ModalProps) {
   return (
     <div
@@ -24,7 +26,7 @@ export function Modal({
       onClick={onClose}
     >
       <div
-        className={`bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto ${className}`}
+        className={`bg-slate-900 border border-slate-800 rounded-xl shadow-2xl w-full ${size === 'wide' ? 'max-w-3xl max-h-[calc(100dvh-2rem)]' : 'max-w-lg max-h-[80vh]'} overflow-y-auto ${className}`}
         onClick={(event) => event.stopPropagation()}
       >
         <div className={`flex items-center justify-between px-5 py-4 border-b border-slate-800 sticky top-0 bg-slate-900 ${headerClassName}`}>
