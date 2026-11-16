@@ -1,6 +1,7 @@
 import {
   CreateProtectedResourceInput,
   IProtectedResourceRepository,
+  UpdateProtectedResourceUrlInput,
 } from '../../domain/IProtectedResourceRepository';
 import { ProtectedResource } from '../../domain/ProtectedResource';
 import { httpClient } from '../../../../shared/infrastructure/http/httpClient';
@@ -9,6 +10,7 @@ import { httpClient } from '../../../../shared/infrastructure/http/httpClient';
 interface ProtectedResourceDto {
   id: string;
   name: string;
+  url?: string | null;
   author_id: string;
   author_role: string;
   is_system: boolean;
@@ -21,6 +23,7 @@ function toProtectedResource(dto: ProtectedResourceDto): ProtectedResource {
   return {
     id: dto.id,
     name: dto.name,
+    url: dto.url || null,
     status: dto.enabled ? 'active' : 'inactive',
     authorId: dto.author_id,
     authorRole: dto.author_role,
@@ -41,7 +44,14 @@ export class ProtectedResourceRepository implements IProtectedResourceRepository
   async createProtectedResource(input: CreateProtectedResourceInput): Promise<void> {
     await httpClient.put<void>(
       `/v1/backoffice/subscriptions/${input.subscriptionId}/protected-resources/${input.id}`,
-      { name: input.name },
+      { name: input.name, url: input.url ?? '' },
+    );
+  }
+
+  async updateProtectedResourceUrl(input: UpdateProtectedResourceUrlInput): Promise<void> {
+    await httpClient.patch<void>(
+      `/v1/backoffice/protected-resources/${encodeURIComponent(input.id)}/url`,
+      { url: input.url.trim() },
     );
   }
 }

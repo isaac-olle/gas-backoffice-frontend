@@ -11,6 +11,7 @@ import { Client } from '../modules/clients/domain/Client';
 import { ProtectedResource } from '../modules/protected_resources/domain/ProtectedResource';
 import { Modal, DetailRow } from './components/modals/Modal';
 import { Dropdown } from './components/forms/Dropdown';
+import { ProtectedResourceUrlForm } from './components/forms/ProtectedResourceUrlForm';
 
 export function DashboardPage() {
   const { clients, loading: clientsLoading, error: clientsError, reload: clientReload } = useClients();
@@ -32,6 +33,7 @@ export function DashboardPage() {
   const [creationStep, setCreationStep] = useState(1);
   const [selectedAllowedScopeIds, setSelectedAllowedScopeIds] = useState<Set<string>>(new Set());
   const [creationName, setCreationName] = useState('');
+  const [creationResourceUrl, setCreationResourceUrl] = useState('');
   const [creationSubscriptionId, setCreationSubscriptionId] = useState('');
   const [redirectUris, setRedirectUris] = useState('http://localhost:3000/oidc/callback/google');
   const [isPublic, setIsPublic] = useState(false);
@@ -52,6 +54,7 @@ export function DashboardPage() {
     setCreationStep(1);
     setSelectedAllowedScopeIds(new Set());
     setCreationName('');
+    setCreationResourceUrl('');
     setCreationSubscriptionId(subscriptions[0]?.id ?? '');
     setRedirectUris('http://localhost:3000/oidc/callback/google');
     setIsPublic(false);
@@ -87,6 +90,7 @@ export function DashboardPage() {
           id: crypto.randomUUID(),
           subscriptionId: creationSubscriptionId,
           name: creationName.trim(),
+          url: creationResourceUrl.trim() || null,
         });
       } else {
         await clientUseCases.createClient({
@@ -272,6 +276,12 @@ export function DashboardPage() {
               .map((scopeId) => scopeNames[scopeId] ?? scopeId)
               .join(', ') || '—'}
           </DetailRow>
+          <ProtectedResourceUrlForm key={selectedResource.id} initialUrl={selectedResource.url}
+            onSave={async (url) => {
+              await resourceUseCases.updateProtectedResourceUrl({ id: selectedResource.id, url });
+              setSelectedResource((current) => current?.id === selectedResource.id ? { ...current, url: url || null } : current);
+              await resourceReload();
+            }} />
         </Modal>
       )}
 
@@ -304,6 +314,13 @@ export function DashboardPage() {
               Name <span className="text-xs text-slate-500">(Required)</span>
               <input required value={creationName} onChange={(event) => setCreationName(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:border-red-500" />
             </label>}
+            {creationMode === 'resource' && (
+              <label className="text-sm text-slate-400">
+                URL <span className="text-xs text-slate-500">(Optional)</span>
+                <input type="url" value={creationResourceUrl} onChange={(event) => setCreationResourceUrl(event.target.value)} placeholder="https://api.example.com" pattern="https?://[^#]+" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:border-red-500" />
+                <span className="mt-1 block text-xs text-slate-500">HTTP or HTTPS URL without a fragment. Leave empty for no URL.</span>
+              </label>
+            )}
             {creationMode === 'client' && creationStep === 1 && (
               <>
                 <label className="text-sm text-slate-400">

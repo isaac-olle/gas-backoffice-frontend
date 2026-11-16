@@ -1,13 +1,15 @@
 import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { IProtectedResourceRepository } from './domain/IProtectedResourceRepository';
-import { CreateProtectedResourceInput } from './domain/IProtectedResourceRepository';
+import { CreateProtectedResourceInput, UpdateProtectedResourceUrlInput } from './domain/IProtectedResourceRepository';
 import { ProtectedResource } from './domain/ProtectedResource';
 import { listProtectedResources } from './application/ListProtectedResources';
 import { createProtectedResource } from './application/CreateProtectedResource';
+import { updateProtectedResourceUrl } from './application/UpdateProtectedResourceUrl';
 
 interface ProtectedResourcesUseCases {
   listProtectedResources: () => Promise<ProtectedResource[]>;
   createProtectedResource: (input: CreateProtectedResourceInput) => Promise<void>;
+  updateProtectedResourceUrl: (input: UpdateProtectedResourceUrlInput) => Promise<void>;
 }
 
 interface ProtectedResourcesContextType {
@@ -31,6 +33,7 @@ export function ProtectedResourcesProvider({
     () => ({
       listProtectedResources: () => listProtectedResources(protectedResourceRepository),
       createProtectedResource: (input) => createProtectedResource(protectedResourceRepository, input),
+      updateProtectedResourceUrl: (input) => updateProtectedResourceUrl(protectedResourceRepository, input),
     }),
     [protectedResourceRepository],
   );
