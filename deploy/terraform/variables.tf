@@ -39,11 +39,6 @@ variable "api_base_url" {
   type        = string
 }
 
-variable "oauth_client_id" {
-  description = "Public OAuth client ID used by the frontend."
-  type        = string
-}
-
 variable "project_name" {
   description = "Existing DigitalOcean project to associate the app with; leave empty to skip association."
   type        = string

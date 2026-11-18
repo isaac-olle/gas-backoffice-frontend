@@ -6,8 +6,9 @@ Run Terraform from `deploy/terraform`. Configure the following values using a `*
 
 - `do_token`: DigitalOcean API token (`TF_VAR_do_token`)
 - `api_base_url`: public GAS backoffice API URL (`TF_VAR_api_base_url`)
-- `oauth_client_id`: public OAuth client ID (`TF_VAR_oauth_client_id`)
 
 The GitHub owner, repository, branch, region, and DigitalOcean project can be overridden with their corresponding Terraform variables. The default project name is `GAS`; set `project_name = ""` to skip associating the app with a project.
 
-The two `VITE_*` settings are build-time values because Vite embeds them into the static bundle. They are public configuration and must not contain secrets.
+`VITE_API_BASE_URL` is a build-time value because Vite embeds it into the static bundle. It is public configuration and must not contain secrets.
+
+Terraform manages DigitalOcean resources only. The GitHub repository and branch identify the deployment source; this configuration does not manage GitHub resources or require a GitHub provider or token.

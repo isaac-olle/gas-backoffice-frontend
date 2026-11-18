@@ -3,14 +3,9 @@
 // Els repositoris dels mòduls hi ataquen per implementar els seus ports.
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-const clientId = import.meta.env.VITE_OAUTH_CLIENT_ID;
 
 if (!baseUrl) {
   throw new Error('Missing VITE_API_BASE_URL environment variable');
-}
-
-if (!clientId) {
-  throw new Error('Missing VITE_OAUTH_CLIENT_ID environment variable');
 }
 
 const refreshPath = '/v1/backoffice/auth/refresh';
@@ -103,6 +98,3 @@ export const httpClient = {
 
 // Base absoluta del backend, per a redireccions de navegador (flux OAuth).
 export const apiBaseUrl = baseUrl;
-
-// client_id públic del backoffice com a client OAuth del propi GAS.
-export const oauthClientId = clientId;
