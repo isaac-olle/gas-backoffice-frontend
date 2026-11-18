@@ -16,6 +16,8 @@ resource "digitalocean_app" "frontend" {
       build_command = "npm ci && npm run build"
       output_dir    = "dist"
 
+      catchall_document = "index.html"
+
       env {
         key   = "VITE_API_BASE_URL"
         value = var.api_base_url
