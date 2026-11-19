@@ -8,7 +8,7 @@ import { getCurrentUser } from './application/GetCurrentUser';
 import { observeAuthState } from './application/ObserveAuthState';
 
 interface AuthUseCases {
-  authorize: () => void;
+  authorize: (input?: { idpReferenceName: string }) => void;
   completeLogin: (input: { idpReferenceName: string; code: string; state: string }) => Promise<void>;
   signOut: () => Promise<void>;
   getCurrentUser: () => Promise<User | null>;
@@ -60,7 +60,7 @@ export function AuthProvider({ authRepository, children }: AuthProviderProps) {
 
   const useCases = useMemo<AuthUseCases>(
     () => ({
-      authorize: () => authorize(authRepository, { idpReferenceName: 'google' }),
+      authorize: (input = { idpReferenceName: 'google' }) => authorize(authRepository, input),
       completeLogin: async (input) => {
         const result = await completeLogin(authRepository, {
           idpReferenceName: input.idpReferenceName,

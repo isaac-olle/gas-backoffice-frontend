@@ -5,7 +5,11 @@ export function LoginPage() {
   const { useCases } = useAuth();
 
   const handleGoogleLogin = () => {
-    useCases.authorize();
+    useCases.authorize({ idpReferenceName: 'google' });
+  };
+
+  const handleMicrosoftLogin = () => {
+    useCases.authorize({ idpReferenceName: 'microsoft' });
   };
 
   return (
@@ -31,6 +35,15 @@ export function LoginPage() {
             Login with Google
           </button>
 
+          <button
+            type="button"
+            onClick={handleMicrosoftLogin}
+            className="mt-3 w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-800 font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+          >
+            <MicrosoftIcon className="w-5 h-5 shrink-0" />
+            Login with Microsoft Entra ID
+          </button>
+
           <div className="mt-8 pt-6 border-t border-slate-700">
             <p className="text-center text-sm text-slate-500">
               Secure access to protected resources
@@ -39,6 +52,17 @@ export function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function MicrosoftIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#f25022" d="M0 0h10v10H0z" />
+      <path fill="#7fba00" d="M11 0h10v10H11z" />
+      <path fill="#00a4ef" d="M0 11h10v10H0z" />
+      <path fill="#ffb900" d="M11 11h10v10H11z" />
+    </svg>
   );
 }
 
