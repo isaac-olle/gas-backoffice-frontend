@@ -5,12 +5,14 @@ import { httpClient } from '../../../../shared/infrastructure/http/httpClient';
 interface SubscriptionDto {
   id: string;
   name: string;
+  is_system: boolean;
 }
 
 function toSubscription(dto: SubscriptionDto): Subscription {
   return {
     id: dto.id,
     name: dto.name,
+    isSystem: dto.is_system,
   };
 }
 

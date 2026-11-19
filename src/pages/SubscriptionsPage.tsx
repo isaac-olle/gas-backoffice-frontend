@@ -30,7 +30,7 @@ export function SubscriptionsPage() {
   };
 
   const confirmDelete = async () => {
-    if (!subscriptionToDelete) return;
+    if (!subscriptionToDelete || subscriptionToDelete.isSystem) return;
     setDeleting(true);
     setDeleteError(null);
     try {
@@ -102,9 +102,9 @@ export function SubscriptionsPage() {
                 <td className="py-2.5 pr-4 text-slate-200">{subscription.name}</td>
                 <td className="py-2.5 text-slate-400 font-mono text-xs">{subscription.id}</td>
                 <td className="py-2.5 text-right">
-                  <button type="button" title="Delete subscription" onClick={(event) => { event.stopPropagation(); setDeleteError(null); setSubscriptionToDelete(subscription); }} className="inline-flex rounded-md p-1.5 text-slate-500 hover:bg-red-950/40 hover:text-red-400">
+                  {!subscription.isSystem && <button type="button" title="Delete subscription" onClick={(event) => { event.stopPropagation(); setDeleteError(null); setSubscriptionToDelete(subscription); }} className="inline-flex rounded-md p-1.5 text-slate-500 hover:bg-red-950/40 hover:text-red-400">
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </button>}
                 </td>
               </tr>
             ))}
@@ -118,7 +118,7 @@ export function SubscriptionsPage() {
         </Modal>
       )}
 
-      {subscriptionToDelete && (
+      {subscriptionToDelete && !subscriptionToDelete.isSystem && (
         <Modal title="Delete subscription" onClose={() => setSubscriptionToDelete(null)}>
           <div className="space-y-4">
             <p className="text-sm text-slate-300">Are you sure you want to delete <span className="font-medium text-slate-100">{subscriptionToDelete.name}</span>?</p>
