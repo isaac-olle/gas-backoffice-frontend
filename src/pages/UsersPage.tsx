@@ -281,10 +281,10 @@ export function UsersPage() {
                   >
                     <KeyRound className="h-4 w-4" />
                   </button>
-                  <button
+                  {!managedUser.isSystem && <button
                     type="button"
-                    disabled={managedUser.isSystem || deletingUserId === managedUser.id}
-                    title={managedUser.isSystem ? 'System users cannot be deleted' : 'Delete user'}
+                    disabled={deletingUserId === managedUser.id}
+                    title="Delete user"
                     onClick={(event) => {
                       event.stopPropagation();
                       void handleDelete(managedUser);
@@ -292,7 +292,7 @@ export function UsersPage() {
                     className="inline-flex rounded-md p-1.5 text-slate-500 hover:bg-red-950/40 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-30"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </button>}
                 </td>
               </tr>
             ))}

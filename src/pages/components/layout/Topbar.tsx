@@ -33,7 +33,7 @@ export function Topbar({ profile, role, onSignOut }: TopbarProps) {
     : '?';
 
   return (
-    <header className="h-16 shrink-0 bg-red-600 flex items-center justify-start px-8">
+    <header className="h-16 shrink-0 bg-gradient-to-br from-red-900 via-slate-900 to-blue-950 border-b border-slate-800 flex items-center justify-start px-8">
       <div className="relative" ref={containerRef}>
         <button
           type="button"
