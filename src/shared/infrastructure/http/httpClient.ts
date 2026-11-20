@@ -3,6 +3,26 @@
 // Els repositoris dels mòduls hi ataquen per implementar els seus ports.
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const csrfEnabled = import.meta.env.VITE_CSRF_ENABLED === 'true';
+let csrfToken: string | null = null;
+
+export function setCsrfToken(token: unknown): void {
+  csrfToken = typeof token === 'string' && token.trim() ? token : null;
+}
+
+export function clearCsrfToken(): void {
+  csrfToken = null;
+}
+
+function requestHeaders(path: string, method: string, hasBody = false): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (hasBody) headers['Content-Type'] = 'application/json';
+  if (csrfEnabled && csrfToken && method !== 'GET'
+    && path.startsWith('/v1/backoffice/') && path !== '/v1/backoffice/auth/callback') {
+    headers['X-CSRF-Token'] = csrfToken;
+  }
+  return headers;
+}
 
 if (!baseUrl) {
   throw new Error('Missing VITE_API_BASE_URL environment variable');
@@ -23,6 +43,7 @@ function refreshSession(): Promise<void> {
     refreshPromise = fetch(`${baseUrl}${refreshPath}`, {
       method: 'POST',
       credentials: 'include',
+      headers: requestHeaders(refreshPath, 'POST'),
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -48,7 +69,7 @@ async function request<T>(
     method,
     // La sessió la gestiona el backend via cookie (login OAuth); l'enviem sempre.
     credentials: 'include',
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    headers: requestHeaders(path, method, body !== undefined),
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
   });

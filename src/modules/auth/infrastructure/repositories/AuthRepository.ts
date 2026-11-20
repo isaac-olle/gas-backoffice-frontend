@@ -1,6 +1,6 @@
 import { InitLoginParams, ExchangeCodeParams, IAuthRepository } from '../../domain/IAuthRepository';
 import { User, UserRole } from '../../domain/User';
-import { httpClient, apiBaseUrl } from '../../../../shared/infrastructure/http/httpClient';
+import { httpClient, apiBaseUrl, setCsrfToken, clearCsrfToken } from '../../../../shared/infrastructure/http/httpClient';
 
 // DTO d'usuari tal com el retorna el backend (snake_case).
 interface UserDto {
@@ -24,6 +24,7 @@ function toUser(dto: UserDto): User {
 
 export class AuthRepository implements IAuthRepository {
   initLogin(params: InitLoginParams): void {
+    clearCsrfToken();
     const query = new URLSearchParams({
       idp_reference_name: params.idpReferenceName,
       scope: 'profile',
@@ -33,16 +34,22 @@ export class AuthRepository implements IAuthRepository {
 
   async exchangeCode(params: ExchangeCodeParams): Promise<void> {
     // El backend bescanvia el codi i guarda la sessió en una cookie HttpOnly;
-    // no torna cap token al body.
-    await httpClient.post('/v1/backoffice/auth/callback', {
+    // El token CSRF opcional es conserva només en memòria.
+    clearCsrfToken();
+    const result = await httpClient.post<{ csrf_token?: unknown } | undefined>('/v1/backoffice/auth/callback', {
       idp_reference_name: params.idpReferenceName,
       code: params.code,
       state: params.state,
     });
+    setCsrfToken(result?.csrf_token);
   }
 
   async signOut(): Promise<void> {
-    await httpClient.post('/v1/backoffice/auth/logout');
+    try {
+      await httpClient.post('/v1/backoffice/auth/logout');
+    } finally {
+      clearCsrfToken();
+    }
   }
 
   async getCurrentUser(): Promise<User | null> {
