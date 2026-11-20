@@ -9,14 +9,6 @@ import { ErrorsPage } from '../../ErrorsPage';
 import { EventsPage } from '../../EventsPage';
 import { SubscriptionsPage } from '../../SubscriptionsPage';
 
-const SECTION_TITLES: Record<SectionId, string> = {
-  dashboard: 'Clients & PRs',
-  subscriptions: 'Subscriptions',
-  users: 'Users',
-  errors: 'Errors',
-  events: 'Events',
-};
-
 export function MainLayout() {
   const { role, useCases } = useAuth();
   const { profile } = useUserProfile();
@@ -38,10 +30,6 @@ export function MainLayout() {
         <Topbar profile={profile} role={role} onSignOut={handleSignOut} />
 
         <main className="flex-1 overflow-y-auto p-6">
-          <h1 className="text-lg font-semibold text-slate-100 mb-5">
-            {SECTION_TITLES[activeSection]}
-          </h1>
-
           {activeSection === 'dashboard' && <DashboardPage />}
           {activeSection === 'subscriptions' && <SubscriptionsPage />}
           {activeSection === 'users' && <UsersPage />}

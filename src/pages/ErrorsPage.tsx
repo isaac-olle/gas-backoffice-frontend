@@ -3,15 +3,15 @@ import { Loader2, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useGasErrors } from './hooks/useGasErrors';
 import { GasError } from '../modules/errors/domain/GasError';
 import { Modal, DetailRow } from './components/modals/Modal';
+import { PageLayout } from './components/layout/PageLayout';
 
 export function ErrorsPage() {
   const { errors, loading, error } = useGasErrors();
   const [selectedError, setSelectedError] = useState<GasError | null>(null);
 
   return (
+    <PageLayout title="Errors">
     <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-      <h2 className="text-sm font-semibold text-slate-200 mb-4">Errors</h2>
-
       {loading && (
         <div className="flex items-center justify-center py-10">
           <Loader2 className="w-6 h-6 text-red-600 animate-spin" />
@@ -88,5 +88,6 @@ export function ErrorsPage() {
         </Modal>
       )}
     </section>
+    </PageLayout>
   );
 }

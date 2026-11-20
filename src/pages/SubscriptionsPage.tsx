@@ -4,6 +4,7 @@ import { Subscription } from '../modules/subscriptions/domain/Subscription';
 import { useSubscriptions } from './hooks/useSubscriptions';
 import { DetailRow, Modal } from './components/modals/Modal';
 import { useSubscriptionsContext } from '../modules/subscriptions/SubscriptionsContext';
+import { PageLayout } from './components/layout/PageLayout';
 
 export function SubscriptionsPage() {
   const { subscriptions, loading, error, reload } = useSubscriptions();
@@ -45,13 +46,12 @@ export function SubscriptionsPage() {
   };
 
   return (
-    <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-200">Subscriptions</h2>
+    <PageLayout title="Subscriptions" action={
         <button type="button" onClick={() => setShowCreate(true)} className="flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-500">
           <Plus className="h-4 w-4" /> New subscription
         </button>
-      </div>
+    }>
+    <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
 
       {showCreate && (
         <Modal title="New subscription" onClose={() => setShowCreate(false)}>
@@ -131,5 +131,6 @@ export function SubscriptionsPage() {
         </Modal>
       )}
     </section>
+    </PageLayout>
   );
 }

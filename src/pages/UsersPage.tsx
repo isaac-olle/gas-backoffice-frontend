@@ -7,6 +7,7 @@ import { isValidEmail } from '../modules/users/domain/Email';
 import { useUsersContext } from '../modules/users/UsersContext';
 import { Modal, DetailRow } from './components/modals/Modal';
 import { Dropdown } from './components/forms/Dropdown';
+import { PageLayout } from './components/layout/PageLayout';
 
 export function UsersPage() {
   const { managedUsers, loading, error, reload } = useManagedUsers();
@@ -100,9 +101,7 @@ export function UsersPage() {
   };
 
   return (
-    <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-200">Users</h2>
+    <PageLayout title="Users" action={
         <button
           type="button"
           onClick={() => setShowCreateForm(true)}
@@ -111,7 +110,8 @@ export function UsersPage() {
           <Plus className="h-4 w-4" />
           New user
         </button>
-      </div>
+    }>
+    <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
 
       {showCreateForm && (
         <Modal title="New user" onClose={() => setShowCreateForm(false)}>
@@ -385,6 +385,7 @@ export function UsersPage() {
         </Modal>
       )}
     </section>
+    </PageLayout>
   );
 }
 

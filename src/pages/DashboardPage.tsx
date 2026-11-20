@@ -12,6 +12,7 @@ import { ProtectedResource } from '../modules/protected_resources/domain/Protect
 import { Modal, DetailRow } from './components/modals/Modal';
 import { Dropdown } from './components/forms/Dropdown';
 import { ProtectedResourceUrlForm } from './components/forms/ProtectedResourceUrlForm';
+import { PageLayout } from './components/layout/PageLayout';
 
 export function DashboardPage() {
   const { clients, loading: clientsLoading, error: clientsError, reload: clientReload } = useClients();
@@ -145,6 +146,7 @@ export function DashboardPage() {
   }, [selectedResource, resolveAuthorNames, resolveScopeNames]);
 
   return (
+    <PageLayout title="Clients & PRs">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Panel
         title="Clients"
@@ -402,6 +404,7 @@ export function DashboardPage() {
         </Modal>
       )}
     </div>
+    </PageLayout>
   );
 }
 

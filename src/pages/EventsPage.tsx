@@ -3,14 +3,15 @@ import { Activity, AlertCircle, Loader2 } from 'lucide-react';
 import { GasEvent } from '../modules/events/domain/GasEvent';
 import { useGasEvents } from './hooks/useGasEvents';
 import { DetailRow, Modal } from './components/modals/Modal';
+import { PageLayout } from './components/layout/PageLayout';
 
 export function EventsPage() {
   const { events, loading, error } = useGasEvents();
   const [selectedEvent, setSelectedEvent] = useState<GasEvent | null>(null);
 
   return (
+    <PageLayout title="Events">
     <section className="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
-      <h2 className="text-sm font-semibold text-slate-200 mb-4">Events</h2>
       {loading && (
         <div className="flex items-center justify-center py-10">
           <Loader2 className="w-6 h-6 text-red-600 animate-spin" />
@@ -56,5 +57,6 @@ export function EventsPage() {
         </Modal>
       )}
     </section>
+    </PageLayout>
   );
 }
