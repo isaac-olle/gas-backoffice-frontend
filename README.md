@@ -1,11 +1,12 @@
 # gas-backoffice-frontend
 Backoffice frontend repository
 
-## CSRF (pendent d'activar)
+## CSRF
 
-La integració està desactivada per defecte. `VITE_CSRF_ENABLED=true` l'habilita
-en compilar; no s'ha de configurar fins que el backend retorni `csrf_token` al
-callback, permeti `X-CSRF-Token` a CORS i validi el token.
+Terraform activa el CSRF a DigitalOcean amb `VITE_CSRF_ENABLED=true` en compilar.
+Per activar-lo en local, configura el mateix valor a `.env`. Si el flag és absent
+o és `false`, la integració queda desactivada. El backend ha de permetre
+`X-CSRF-Token` a CORS per a l'origen del frontend.
 
 El token del callback es desa només en memòria i s'envia a les peticions de
 backoffice que modifiquen dades (incloent refresh i logout), amb cookies via
@@ -13,8 +14,10 @@ backoffice que modifiquen dades (incloent refresh i logout), amb cookies via
 S'esborra en començar un nou login i en fer logout, encara que aquest falli.
 No es desa en localStorage, sessionStorage ni cookies del frontend.
 
-Una recàrrega perd el token. La recuperació queda pendent de definir amb el
-backend; actualment no s'inventa cap endpoint ni es recupera des de `/users/me`.
+Després d'una recàrrega o en una pestanya nova, la primera operació que necessita
+el token el recupera amb `GET /v1/backoffice/auth/csrf` i les cookies de sessió.
+Les operacions concurrents comparteixen la recuperació. Si l'endpoint retorna un
+401, el frontend torna a la pantalla de login.
 
 ## Events
 

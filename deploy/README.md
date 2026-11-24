@@ -11,4 +11,6 @@ The GitHub owner, repository, branch, region, and DigitalOcean project can be ov
 
 `VITE_API_BASE_URL` is a build-time value because Vite embeds it into the static bundle. It is public configuration and must not contain secrets.
 
+Terraform sets `VITE_CSRF_ENABLED=true` at build time. Before applying the configuration, deploy the backend with `GET /v1/backoffice/auth/csrf` available and allow `X-CSRF-Token` in CORS for the frontend origin.
+
 Terraform manages DigitalOcean resources only. The GitHub repository and branch identify the deployment source; this configuration does not manage GitHub resources or require a GitHub provider or token.

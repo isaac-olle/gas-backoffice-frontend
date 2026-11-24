@@ -24,6 +24,13 @@ resource "digitalocean_app" "frontend" {
         type  = "GENERAL"
         scope = "BUILD_TIME"
       }
+
+      env {
+        key   = "VITE_CSRF_ENABLED"
+        value = "true"
+        type  = "GENERAL"
+        scope = "BUILD_TIME"
+      }
     }
   }
 }

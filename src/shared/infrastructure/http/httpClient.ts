@@ -4,22 +4,78 @@
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const csrfEnabled = import.meta.env.VITE_CSRF_ENABLED === 'true';
+const callbackPath = '/v1/backoffice/auth/callback';
+const csrfPath = '/v1/backoffice/auth/csrf';
+const refreshPath = '/v1/backoffice/auth/refresh';
+const logoutPath = '/v1/backoffice/auth/logout';
 let csrfToken: string | null = null;
+let sessionVersion = 0;
+let csrfPromise: Promise<string> | null = null;
+let refreshPromise: Promise<void> | null = null;
+const sessionExpiredListeners = new Set<() => void>();
+
+export function onSessionExpired(listener: () => void): () => void {
+  sessionExpiredListeners.add(listener);
+  return () => { sessionExpiredListeners.delete(listener); };
+}
+
+function expireSession(): void {
+  clearCsrfToken();
+  for (const listener of sessionExpiredListeners) listener();
+}
 
 export function setCsrfToken(token: unknown): void {
-  csrfToken = typeof token === 'string' && token.trim() ? token : null;
+  clearCsrfToken();
+  csrfToken = parseCsrfToken(token);
 }
 
 export function clearCsrfToken(): void {
+  sessionVersion++;
   csrfToken = null;
+  csrfPromise = null;
+  refreshPromise = null;
 }
 
-function requestHeaders(path: string, method: string, hasBody = false): Record<string, string> {
+function parseCsrfToken(token: unknown): string | null {
+  return typeof token === 'string' && token.trim() ? token : null;
+}
+
+function assertCurrentSession(version: number): void {
+  if (version !== sessionVersion) throw new Error('Session changed');
+}
+
+async function recoverCsrfToken(version: number): Promise<string> {
+  assertCurrentSession(version);
+  if (csrfToken) return csrfToken;
+  if (!csrfPromise) {
+    csrfPromise = fetch(`${baseUrl}${csrfPath}`, { method: 'GET', credentials: 'include' })
+      .then(async (response) => {
+        assertCurrentSession(version);
+        if (response.status === 401) expireSession();
+        if (!response.ok) throw new Error(await extractErrorMessage(response));
+
+        const data = await response.json();
+        assertCurrentSession(version);
+        const token = parseCsrfToken(data?.csrf_token);
+        if (!token) throw new Error('Missing CSRF token');
+        csrfToken = token;
+        return token;
+      })
+      .finally(() => {
+        if (version === sessionVersion) csrfPromise = null;
+      });
+  }
+  return csrfPromise;
+}
+
+async function requestHeaders(
+  path: string, method: string, version: number, hasBody = false,
+): Promise<Record<string, string>> {
   const headers: Record<string, string> = {};
   if (hasBody) headers['Content-Type'] = 'application/json';
-  if (csrfEnabled && csrfToken && method !== 'GET'
-    && path.startsWith('/v1/backoffice/') && path !== '/v1/backoffice/auth/callback') {
-    headers['X-CSRF-Token'] = csrfToken;
+  if (csrfEnabled && method !== 'GET'
+    && path.startsWith('/v1/backoffice/') && path !== callbackPath) {
+    headers['X-CSRF-Token'] = await recoverCsrfToken(version);
   }
   return headers;
 }
@@ -28,9 +84,6 @@ if (!baseUrl) {
   throw new Error('Missing VITE_API_BASE_URL environment variable');
 }
 
-const refreshPath = '/v1/backoffice/auth/refresh';
-let refreshPromise: Promise<void> | null = null;
-
 export interface HttpRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   // Cos JSON. Es serialitza automàticament.
@@ -38,20 +91,23 @@ export interface HttpRequestOptions {
   signal?: AbortSignal;
 }
 
-function refreshSession(): Promise<void> {
+function refreshSession(version: number): Promise<void> {
+  assertCurrentSession(version);
   if (!refreshPromise) {
-    refreshPromise = fetch(`${baseUrl}${refreshPath}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: requestHeaders(refreshPath, 'POST'),
-    })
+    refreshPromise = requestHeaders(refreshPath, 'POST', version)
+      .then((headers) => {
+        assertCurrentSession(version);
+        return fetch(`${baseUrl}${refreshPath}`, { method: 'POST', credentials: 'include', headers });
+      })
       .then(async (response) => {
+        assertCurrentSession(version);
+        if (response.status === 401) expireSession();
         if (!response.ok) {
           throw new Error(await extractErrorMessage(response));
         }
       })
       .finally(() => {
-        refreshPromise = null;
+        if (version === sessionVersion) refreshPromise = null;
       });
   }
 
@@ -64,19 +120,24 @@ async function request<T>(
   canRefresh = true,
 ): Promise<T> {
   const { method = 'GET', body, signal } = options;
+  const version = sessionVersion;
+  const headers = await requestHeaders(path, method, version, body !== undefined);
+  assertCurrentSession(version);
 
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     // La sessió la gestiona el backend via cookie (login OAuth); l'enviem sempre.
     credentials: 'include',
-    headers: requestHeaders(path, method, body !== undefined),
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
   });
 
-  if (response.status === 401 && canRefresh && path !== refreshPath) {
+  if (response.status === 401 && canRefresh && path !== refreshPath
+    && path !== csrfPath && path !== callbackPath) {
     try {
-      await refreshSession();
+      await refreshSession(version);
+      assertCurrentSession(version);
       return request<T>(path, options, false);
     } catch {
       // Si el refresh falla, mantenim l'error 401 de la request original.
@@ -87,13 +148,25 @@ async function request<T>(
     throw new Error(await extractErrorMessage(response));
   }
 
-  // 204 No Content (p. ex. DELETE) o cos buit.
-  if (response.status === 204) {
-    return undefined as T;
+  const text = response.status === 204 ? '' : await response.text();
+  assertCurrentSession(version);
+  const result = text ? JSON.parse(text) : undefined;
+  if (path === callbackPath) {
+    setCsrfToken(result?.csrf_token);
   }
+  return result as T;
+}
 
-  const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+async function post<T>(path: string, body?: unknown): Promise<T> {
+  const options = { method: 'POST', body } as const;
+  if (path !== logoutPath) return request<T>(path, options);
+
+  const version = sessionVersion;
+  try {
+    return await request<T>(path, options);
+  } finally {
+    if (version === sessionVersion) clearCsrfToken();
+  }
 }
 
 async function extractErrorMessage(response: Response): Promise<string> {
@@ -111,7 +184,7 @@ async function extractErrorMessage(response: Response): Promise<string> {
 
 export const httpClient = {
   get: <T>(path: string, signal?: AbortSignal) => request<T>(path, { method: 'GET', signal }),
-  post: <T>(path: string, body?: unknown) => request<T>(path, { method: 'POST', body }),
+  post,
   put: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PUT', body }),
   patch: <T>(path: string, body?: unknown) => request<T>(path, { method: 'PATCH', body }),
   delete: <T = void>(path: string) => request<T>(path, { method: 'DELETE' }),

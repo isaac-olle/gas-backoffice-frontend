@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useAuth } from './modules/auth/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { CallbackPage } from './pages/CallbackPage';
@@ -9,8 +8,7 @@ const CALLBACK_PATH_PREFIX = '/oidc/callback/';
 
 function App() {
   const { user, loading } = useAuth();
-  // Llegim el pathname una sola vegada en muntar (sense router, dues rutes: / i /oidc/callback/:idp).
-  const [pathname] = useState(() => window.location.pathname);
+  const { pathname } = window.location;
 
   if (pathname.startsWith(CALLBACK_PATH_PREFIX)) {
     const idpReferenceName = pathname.slice(CALLBACK_PATH_PREFIX.length);

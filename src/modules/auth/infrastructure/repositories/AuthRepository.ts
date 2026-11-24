@@ -1,6 +1,6 @@
 import { InitLoginParams, ExchangeCodeParams, IAuthRepository } from '../../domain/IAuthRepository';
 import { User, UserRole } from '../../domain/User';
-import { httpClient, apiBaseUrl, setCsrfToken, clearCsrfToken } from '../../../../shared/infrastructure/http/httpClient';
+import { httpClient, apiBaseUrl, clearCsrfToken, onSessionExpired } from '../../../../shared/infrastructure/http/httpClient';
 
 // DTO d'usuari tal com el retorna el backend (snake_case).
 interface UserDto {
@@ -36,20 +36,15 @@ export class AuthRepository implements IAuthRepository {
     // El backend bescanvia el codi i guarda la sessió en una cookie HttpOnly;
     // El token CSRF opcional es conserva només en memòria.
     clearCsrfToken();
-    const result = await httpClient.post<{ csrf_token?: unknown } | undefined>('/v1/backoffice/auth/callback', {
+    await httpClient.post('/v1/backoffice/auth/callback', {
       idp_reference_name: params.idpReferenceName,
       code: params.code,
       state: params.state,
     });
-    setCsrfToken(result?.csrf_token);
   }
 
   async signOut(): Promise<void> {
-    try {
-      await httpClient.post('/v1/backoffice/auth/logout');
-    } finally {
-      clearCsrfToken();
-    }
+    await httpClient.post('/v1/backoffice/auth/logout');
   }
 
   async getCurrentUser(): Promise<User | null> {
@@ -62,9 +57,7 @@ export class AuthRepository implements IAuthRepository {
     }
   }
 
-  onAuthStateChange(_callback: (user: User | null) => void): () => void {
-    // La sessió viu al backend (cookie); no hi ha canal de canvis en temps real.
-    // L'estat inicial es resol amb getCurrentUser(). Retornem un unsubscribe buit.
-    return () => {};
+  onAuthStateChange(callback: (user: User | null) => void): () => void {
+    return onSessionExpired(() => callback(null));
   }
 }

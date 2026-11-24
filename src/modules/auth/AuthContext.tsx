@@ -33,6 +33,8 @@ export function AuthProvider({ authRepository, children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => observeAuthState(authRepository, setUser), [authRepository]);
+
   useEffect(() => {
     let active = true;
 
