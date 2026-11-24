@@ -30,7 +30,7 @@ export function Sidebar({ role, activeSection, onNavigate }: SidebarProps) {
 
   return (
     <aside className="w-64 shrink-0 bg-slate-950/30 border-r border-slate-800 flex flex-col">
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-800">
+      <div className="h-16 shrink-0 flex items-center gap-3 px-6 border-b border-slate-800">
         <div className="bg-gradient-to-br from-red-600 to-red-700 p-2 rounded-lg shadow-lg">
           <GasStationIcon className="w-6 h-6 text-slate-200" />
         </div>
